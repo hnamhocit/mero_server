@@ -90,3 +90,4 @@ dist/
 *.tsbuildinfo
 
 # IDE / Editor
+/src/generated/prisma

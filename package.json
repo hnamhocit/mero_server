@@ -4,20 +4,22 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-      "dev": "nodemon --watch src --exec ts-node src/index.ts",
-      "build": "tsc",
-      "start": "node dist/index.js"
+    "dev": "nodemon --watch src --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^6.16.3",
     "express": "^5.1.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.6.2",
     "nodemon": "^3.1.10",
+    "prisma": "^6.16.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
