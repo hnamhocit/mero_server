@@ -1,20 +1,15 @@
-import { createServer } from "node:http";
 import { Server } from "socket.io";
-import express from "express";
 
 import { ISocket } from "../interfaces";
 import { socketMiddleware } from "../middlewares";
+import { registerHandlers } from "../utils";
 
 export const connectedUsers = new Map<number, ISocket>();
 
-function initSocketIO(app: express.Express) {
-  const server = createServer(app);
-  const io = new Server(server);
-
+function initSocketIO(io: Server) {
   io.use(socketMiddleware);
 
   io.on("connection", (socket) => {
-    console.log("a user connected");
     const _socket = socket as unknown as ISocket;
     const userId = _socket.user.id;
 
@@ -29,6 +24,22 @@ function initSocketIO(app: express.Express) {
 
     connectedUsers.set(userId, _socket);
     console.log(`✅ [CONNECT] ${userId} (${socket.id}) connected`);
+
+    const handlers = registerHandlers([]);
+
+    socket.onAny((channel, payload, cb) => {
+      const cmd = payload.cmd;
+      const args = payload.args;
+
+      const handler = handlers[channel];
+      const cmdHandler = handler?.[cmd];
+
+      if (cmdHandler) {
+        cmdHandler(socket, args, cb);
+      } else {
+        cb({ error: "Handler not found" });
+      }
+    });
 
     socket.on("disconnect", (reason) => {
       console.log(
