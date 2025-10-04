@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import { BaseController } from "../core";
 import { loginSchema, refreshSchema, registerSchema } from "../schemas";
 import { IJwtPayload } from "../interfaces";
-import { passport } from "../config";
+import { authMiddleware } from "@src/middlewares";
 
 export class AuthController extends BaseController {
   protected registerRoutes(): void {
@@ -13,17 +13,9 @@ export class AuthController extends BaseController {
 
     this.router.post("/register", this.register);
 
-    this.router.get(
-      "/logout",
-      passport.authenticate("jwt", { session: false }),
-      this.logout,
-    );
+    this.router.get("/logout", authMiddleware, this.logout);
 
-    this.router.post(
-      "/refresh",
-      passport.authenticate("jwt", { session: false }),
-      this.refresh,
-    );
+    this.router.post("/refresh", authMiddleware, this.refresh);
   }
 
   private async generateTokens(payload: IJwtPayload) {
