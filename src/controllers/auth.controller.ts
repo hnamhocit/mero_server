@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import { BaseController } from "../core";
 import { loginSchema, refreshSchema, registerSchema } from "../schemas";
 import { IJwtPayload } from "../interfaces";
-import { authMiddleware } from "@src/middlewares";
+import { authMiddleware } from "../middlewares";
 
 export class AuthController extends BaseController {
   protected registerRoutes(): void {
@@ -18,8 +18,8 @@ export class AuthController extends BaseController {
     this.router.post("/refresh", authMiddleware, this.refresh);
   }
 
-  private async generateTokens(payload: IJwtPayload) {
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
+  private generateTokens = async (payload: IJwtPayload) => {
+    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET!, {
       expiresIn: "15m",
     });
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, {
@@ -33,9 +33,9 @@ export class AuthController extends BaseController {
     });
 
     return { accessToken, refreshToken };
-  }
+  };
 
-  async login(req: Request, res: Response) {
+  login = async (req: Request, res: Response) => {
     const { email, password } = loginSchema.parse(req.body);
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -61,9 +61,9 @@ export class AuthController extends BaseController {
 
     const tokens = await this.generateTokens(other);
     res.json({ success: true, msg: "Logged in successfully", data: tokens });
-  }
+  };
 
-  async register(req: Request, res: Response) {
+  register = async (req: Request, res: Response) => {
     const { email, password, displayName } = registerSchema.parse(req.body);
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -84,11 +84,20 @@ export class AuthController extends BaseController {
 
     const tokens = await this.generateTokens(newUser);
     res.json({ success: true, msg: "Registered successfully", data: tokens });
-  }
+  };
 
-  async logout(req: Request, res: Response) {}
+  logout = async (req: Request, res: Response) => {
+    const payload = req.user as IJwtPayload;
 
-  async refresh(req: Request, res: Response) {
+    await this.prisma.user.update({
+      where: { id: payload.id },
+      data: { refreshToken: null },
+    });
+
+    res.json({ success: true, msg: "Logged out successfully", data: null });
+  };
+
+  refresh = async (req: Request, res: Response) => {
     const { refreshToken } = refreshSchema.parse(req.body);
 
     const decoded = jwt.decode(refreshToken, { complete: true });
@@ -107,5 +116,5 @@ export class AuthController extends BaseController {
       msg: "Token refreshed successfully",
       data: tokens,
     });
-  }
+  };
 }

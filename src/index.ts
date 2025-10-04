@@ -7,6 +7,8 @@ import "dotenv/config";
 import apiRouter from "./routes";
 import { passport } from "./config";
 import initSocketIO from "./sockets";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 
 const app = express();
 
@@ -18,9 +20,17 @@ app.use(express.json());
 
 app.use(apiRouter);
 
-initSocketIO(app);
+const server = createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+initSocketIO(io);
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });

@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import jwt from "jsonwebtoken";
-import { IJwtPayload } from "@src/interfaces";
+
+import { IJwtPayload } from "../interfaces";
 
 export function socketMiddleware(socket: Socket, next: (err?: Error) => void) {
   const token =

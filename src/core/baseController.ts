@@ -4,18 +4,17 @@ import { PrismaClient } from "../generated/prisma";
 import { prisma } from "../config";
 
 export abstract class BaseController {
-  protected prisma: PrismaClient;
-  protected router: Router;
-
-  constructor() {
-    this.prisma = prisma;
-    this.router = Router();
-    this.registerRoutes();
-  }
+  protected prisma: PrismaClient = prisma;
+  protected router: Router = Router();
+  private routesRegistered = false;
 
   protected abstract registerRoutes(): void;
 
   public getRouter() {
+    if (!this.routesRegistered) {
+      this.registerRoutes();
+      this.routesRegistered = true;
+    }
     return this.router;
   }
 }

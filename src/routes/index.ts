@@ -1,6 +1,7 @@
-import { AuthController } from "@src/controllers";
-import { RouterGroup } from "@src/core";
 import { Router } from "express";
+
+import { AuthController } from "../controllers";
+import { RouterGroup } from "../core";
 
 const router = Router();
 
