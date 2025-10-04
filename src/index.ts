@@ -1,14 +1,26 @@
-import express, {Request, Response} from "express";
+import express from "express";
+import helmet from "helmet";
+import compression from "compression";
+import cors from "cors";
+import "dotenv/config";
+
+import apiRouter from "./routes";
+import { passport } from "./config";
+import initSocketIO from "./sockets";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
+app.use(helmet());
+app.use(compression());
+app.use(cors());
+app.use(passport.initialize());
 app.use(express.json());
 
-app.get("/", (req: Request, res: Response) => {
-    res.send("🚀 Hello from Express + TypeScript!");
-});
+app.use(apiRouter);
 
+initSocketIO(app);
+
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
