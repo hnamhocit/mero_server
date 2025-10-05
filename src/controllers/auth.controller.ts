@@ -15,7 +15,7 @@ export class AuthController extends BaseController {
 
     this.router.get("/logout", authMiddleware, this.logout);
 
-    this.router.post("/refresh", authMiddleware, this.refresh);
+    this.router.post("/refresh", this.refresh);
   }
 
   private generateTokens = async (payload: IJwtPayload) => {
@@ -109,7 +109,11 @@ export class AuthController extends BaseController {
     }
 
     const payload = decoded.payload as IJwtPayload;
-    const tokens = await this.generateTokens(payload);
+    const tokens = await this.generateTokens({
+      id: payload.id,
+      role: payload.role,
+      email: payload.email,
+    });
 
     res.json({
       success: true,

@@ -8,9 +8,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
+model User {
+  id            Int      @id @default(autoincrement())
+  displayName   String
+  email         String   @unique
+  password      String
+  refreshToken  String?
+  bio           String?
+  photoURL      String?
+  photoId       String?
+  backgroundURL String?
+  backgroundId  String?
+  role          Role     @default(USER)
+  sex           Sex      @default(UNKNOWN)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sentRequests     FriendRequest[] @relation("FriendRequestFrom")
+  receivedRequests FriendRequest[] @relation("FriendRequestTo")
+
+  friendshipsA Friend[] @relation("FriendA")
+  friendshipsB Friend[] @relation("FriendB")
+
+  messages     Message[]
+  participants Participant[]
+}
+
+model FriendRequest {
+  id        Int      @id @default(autoincrement())
+  fromId    Int
+  toId      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  from User @relation("FriendRequestFrom", fields: [fromId], references: [id])
+  to   User @relation("FriendRequestTo", fields: [toId], references: [id])
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  userAId   Int
+  userBId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userA User @relation("FriendA", fields: [userAId], references: [id])
+  userB User @relation("FriendB", fields: [userBId], references: [id])
+}
+
+model Conversation {
+  id            Int              @id @default(autoincrement())
+  type          ConversationType @default(GROUP)
+  name          String?
+  lastMessageId Int?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  lastMessage  Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
+  messages     Message[]
+  participants Participant[]
+}
+
+model Participant {
+  id                Int             @id @default(autoincrement())
+  conversationId    Int
+  userId            Int
+  role              ParticipantRole @default(MEMBER)
+  lastSeenMessageId Int?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+  lastSeenMessage Message?     @relation("LastSeenMessage", fields: [lastSeenMessageId], references: [id])
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+  content        String
+  conversationId Int
+  senderId       Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  conversationAsLast Conversation[] @relation("LastMessage")
+  participantAsLast  Participant[]  @relation("LastSeenMessage")
+}
+
+enum Role {
   USER
+  ADMIN
 }
 
 enum Sex {
@@ -20,18 +110,13 @@ enum Sex {
   OTHER
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum ConversationType {
+  DIRECT
+  GROUP
+}
 
-  email       String   @unique
-  password    String
-  displayName String
-  role        UserRole @default(USER)
-  sex         Sex      @default(UNKNOWN)
-
-  photoURL      String?
-  backgroundURL String?
-  refreshToken  String?
+enum ParticipantRole {
+  ADMIN
+  SUB_ADMIN
+  MEMBER
 }
