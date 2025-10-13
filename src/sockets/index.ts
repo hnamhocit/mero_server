@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import { ISocket } from "../interfaces";
 import { socketMiddleware } from "../middlewares";
 import { registerHandlers } from "../utils";
+import { FriendHandler, FriendRequestHandler } from "./handlers";
 
 export const connectedUsers = new Map<number, ISocket>();
 
@@ -25,7 +26,7 @@ function initSocketIO(io: Server) {
     connectedUsers.set(userId, _socket);
     console.log(`✅ [CONNECT] ${userId} (${socket.id}) connected`);
 
-    const handlers = registerHandlers([]);
+    const handlers = registerHandlers([FriendRequestHandler, FriendHandler]);
 
     socket.onAny((channel, payload, cb) => {
       const cmd = payload.cmd;
@@ -43,7 +44,7 @@ function initSocketIO(io: Server) {
 
     socket.on("disconnect", (reason) => {
       console.log(
-        `❌ [DISCONNECT] ${socket.id} disconnected. Reason: ${reason}`,
+        `❌ [DISCONNECT] ${socket.id} disconnected. Reason: ${reason}`
       );
     });
 

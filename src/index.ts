@@ -24,8 +24,8 @@ const server = createServer(app);
 export const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
   },
+  transports: ["websocket", "polling"],
 });
 
 initSocketIO(io);

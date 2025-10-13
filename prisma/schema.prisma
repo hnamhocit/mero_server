@@ -9,26 +9,29 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  displayName   String
-  email         String   @unique
-  password      String
-  refreshToken  String?
-  bio           String?
-  photoURL      String?
-  photoId       String?
-  backgroundURL String?
-  backgroundId  String?
-  role          Role     @default(USER)
-  sex           Sex      @default(UNKNOWN)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                        Int       @id @default(autoincrement())
+  displayName               String
+  email                     String    @unique
+  password                  String
+  refreshToken              String?
+  bio                       String?
+  photoURL                  String?
+  photoId                   String?
+  backgroundURL             String?
+  backgroundId              String?
+  verificationCode          String?
+  verificationCodeExpiresAt DateTime?
+  isEmailVerified           Boolean   @default(false)
+  role                      Role      @default(USER)
+  sex                       Sex       @default(UNKNOWN)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
   sentRequests     FriendRequest[] @relation("FriendRequestFrom")
   receivedRequests FriendRequest[] @relation("FriendRequestTo")
 
-  friendshipsA Friend[] @relation("FriendA")
-  friendshipsB Friend[] @relation("FriendB")
+  friends Friend[] @relation("Friends")
+  friendsOf Friend[] @relation("FriendsOf")
 
   messages     Message[]
   participants Participant[]
@@ -38,6 +41,7 @@ model FriendRequest {
   id        Int      @id @default(autoincrement())
   fromId    Int
   toId      Int
+  message   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -47,13 +51,13 @@ model FriendRequest {
 
 model Friend {
   id        Int      @id @default(autoincrement())
-  userAId   Int
-  userBId   Int
+  user_id   Int
+  friend_id   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userA User @relation("FriendA", fields: [userAId], references: [id])
-  userB User @relation("FriendB", fields: [userBId], references: [id])
+  user User @relation("Friends", fields: [user_id], references: [id])
+  friend User @relation("FriendsOf", fields: [friend_id], references: [id])
 }
 
 model Conversation {

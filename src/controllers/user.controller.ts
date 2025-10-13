@@ -6,21 +6,40 @@ import { authMiddleware } from "../middlewares";
 
 export class UserController extends BaseController {
   protected registerRoutes(): void {
-    this.router.get("/me", authMiddleware, this.getMe);
+    this.router.get("/", authMiddleware, this.getUsers);
   }
 
-  getMe = async (req: Request, res: Response) => {
+  getUsers = async (req: Request, res: Response) => {
     const payload = req.user as IJwtPayload;
+    const q = req.query.q as string;
 
-    const user = await this.prisma.user.findUnique({
+    const users = await this.prisma.user.findMany({
       where: {
-        id: payload.id,
+        AND: [
+          {
+            OR: [
+              { email: { contains: q, mode: "insensitive" } },
+              { displayName: { contains: q, mode: "insensitive" } },
+            ],
+          },
+          {
+            NOT: {
+              id: payload.id,
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        displayName: true,
+        bio: true,
+        photoURL: true,
       },
     });
 
     res.status(200).json({
       success: true,
-      data: user,
+      data: users,
     });
   };
 }

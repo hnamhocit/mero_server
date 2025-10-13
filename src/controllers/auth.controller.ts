@@ -6,6 +6,7 @@ import { BaseController } from "../core";
 import { loginSchema, refreshSchema, registerSchema } from "../schemas";
 import { IJwtPayload } from "../interfaces";
 import { authMiddleware } from "../middlewares";
+import { generateVerificationCode, sendMail } from "../utils";
 
 export class AuthController extends BaseController {
   protected registerRoutes(): void {
@@ -83,6 +84,27 @@ export class AuthController extends BaseController {
     });
 
     const tokens = await this.generateTokens(newUser);
+    const verificationCode = generateVerificationCode();
+    const verificationCodeExpiresAt = new Date(Date.now() + 1000 * 60 * 10);
+
+    await this.prisma.user.update({
+      where: { id: newUser.id },
+      data: {
+        verificationCode,
+        verificationCodeExpiresAt,
+      },
+    });
+
+    sendMail({
+      to: newUser.email,
+      subject: "Confirm Your Email",
+      templateName: "confirm-email",
+      args: {
+        email: newUser.email,
+        verificationCode,
+      },
+    });
+
     res.json({ success: true, msg: "Registered successfully", data: tokens });
   };
 

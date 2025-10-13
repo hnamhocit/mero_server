@@ -12,14 +12,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^6.16.3",
+    "@prisma/client": "^6.17.0",
     "bcrypt": "^6.0.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.9",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "socket.io": "^4.8.1",
@@ -28,12 +30,14 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/compression": "^1.8.1",
+    "@types/ejs": "^3.1.5",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.6.2",
+    "@types/nodemailer": "^7.0.2",
     "@types/passport-jwt": "^4.0.1",
     "nodemon": "^3.1.10",
-    "prisma": "^6.16.3",
+    "prisma": "^6.17.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
