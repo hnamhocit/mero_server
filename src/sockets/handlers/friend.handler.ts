@@ -10,12 +10,12 @@ export class FriendHandler extends BaseHandler {
       where: {
         OR: [
           {
-            user_id: userId,
-            friend_id: friendId,
+            userId: userId,
+            friendId: friendId,
           },
           {
-            user_id: friendId,
-            friend_id: userId,
+            userId: friendId,
+            friendId: userId,
           },
         ],
       },

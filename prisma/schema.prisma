@@ -51,19 +51,21 @@ model FriendRequest {
 
 model Friend {
   id        Int      @id @default(autoincrement())
-  user_id   Int
-  friend_id   Int
+  userId   Int
+  friendId   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation("Friends", fields: [user_id], references: [id])
-  friend User @relation("FriendsOf", fields: [friend_id], references: [id])
+  user User @relation("Friends", fields: [userId], references: [id])
+  friend User @relation("FriendsOf", fields: [friendId], references: [id])
 }
 
 model Conversation {
   id            Int              @id @default(autoincrement())
   type          ConversationType @default(GROUP)
   name          String?
+  photoURL      String?
+  photoId       String?
   lastMessageId Int?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
@@ -85,6 +87,8 @@ model Participant {
   conversation    Conversation @relation(fields: [conversationId], references: [id])
   user            User         @relation(fields: [userId], references: [id])
   lastSeenMessage Message?     @relation("LastSeenMessage", fields: [lastSeenMessageId], references: [id])
+
+  @@unique([conversationId, userId])
 }
 
 model Message {

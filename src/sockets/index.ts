@@ -3,7 +3,11 @@ import { Server } from "socket.io";
 import { ISocket } from "../interfaces";
 import { socketMiddleware } from "../middlewares";
 import { registerHandlers } from "../utils";
-import { FriendHandler, FriendRequestHandler } from "./handlers";
+import {
+  FriendHandler,
+  FriendRequestHandler,
+  MessageHandler,
+} from "./handlers";
 
 export const connectedUsers = new Map<number, ISocket>();
 
@@ -26,7 +30,11 @@ function initSocketIO(io: Server) {
     connectedUsers.set(userId, _socket);
     console.log(`✅ [CONNECT] ${userId} (${socket.id}) connected`);
 
-    const handlers = registerHandlers([FriendRequestHandler, FriendHandler]);
+    const handlers = registerHandlers([
+      FriendRequestHandler,
+      FriendHandler,
+      MessageHandler,
+    ]);
 
     socket.onAny((channel, payload, cb) => {
       const cmd = payload.cmd;

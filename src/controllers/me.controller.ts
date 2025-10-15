@@ -13,6 +13,8 @@ export class MeController extends BaseController {
       authMiddleware,
       this.getReceivedRequests
     );
+    this.router.get("/friends", authMiddleware, this.getFriends);
+    this.router.get("/conversations", authMiddleware, this.getConversations);
   }
 
   getMe = async (req: Request, res: Response) => {
@@ -62,7 +64,7 @@ export class MeController extends BaseController {
         id: true,
         friends: {
           select: {
-            friend_id: true,
+            friendId: true,
           },
         },
       },
@@ -81,7 +83,7 @@ export class MeController extends BaseController {
     res.status(200).json({
       success: true,
       data: {
-        friendIds: user!.friends.map((friend) => friend.friend_id),
+        friendIds: user!.friends.map((friend) => friend.friendId),
         receivedRequestIds: requests
           .filter((request) => request.toId === payload.id)
           .map((req) => req.fromId),
@@ -110,5 +112,77 @@ export class MeController extends BaseController {
     });
 
     res.status(200).json({ success: true, data: friendRequests });
+  };
+
+  getFriends = async (req: Request, res: Response) => {
+    const payload = req.user as IJwtPayload;
+
+    const friends = await this.prisma.friend.findMany({
+      where: { userId: payload.id },
+      include: {
+        friend: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            photoURL: true,
+          },
+        },
+      },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, data: friends.map((friend) => friend.friend) });
+  };
+
+  getConversations = async (req: Request, res: Response) => {
+    const payload = req.user as IJwtPayload;
+
+    const [groups, directs] = await Promise.all([
+      this.prisma.conversation.findMany({
+        where: {
+          type: "GROUP",
+          participants: { some: { userId: payload.id } },
+        },
+        include: {
+          lastMessage: {
+            include: { sender: { select: { id: true, displayName: true } } },
+          },
+          _count: { select: { participants: true } },
+        },
+      }),
+      this.prisma.conversation.findMany({
+        where: {
+          type: "DIRECT",
+          participants: { some: { userId: payload.id } },
+        },
+        include: {
+          lastMessage: {
+            include: { sender: { select: { id: true, displayName: true } } },
+          },
+          participants: {
+            where: { NOT: { userId: payload.id } },
+            select: {
+              user: { select: { id: true, displayName: true, photoURL: true } },
+            },
+          },
+        },
+      }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: [
+        ...groups.map((g) => ({
+          ...g,
+          memberCount: g._count.participants,
+        })),
+        ...directs.map(({ participants, ...d }) => ({
+          ...d,
+          otherUser: participants[0]?.user,
+        })),
+      ],
+    });
   };
 }
