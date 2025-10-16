@@ -6,7 +6,7 @@ export class FriendHandler extends BaseHandler {
     const { friendId } = args;
     const userId = socket.user.id;
 
-    await this.prisma.friend.deleteMany({
+    await this.prisma.friendship.deleteMany({
       where: {
         OR: [
           {

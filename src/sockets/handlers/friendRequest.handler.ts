@@ -19,7 +19,7 @@ export class FriendRequestHandler extends BaseHandler {
           ],
         },
       }),
-      this.prisma.friend.count({
+      this.prisma.friendship.count({
         where: {
           OR: [
             { userId: socket.user.id, friendId: to },
@@ -80,10 +80,10 @@ export class FriendRequestHandler extends BaseHandler {
       return cb({ success: false, message: "Friend request not found" });
 
     const [_, __, ___, conversation] = await this.prisma.$transaction([
-      this.prisma.friend.create({
+      this.prisma.friendship.create({
         data: { userId: socket.user.id, friendId: friendRequest.fromId },
       }),
-      this.prisma.friend.create({
+      this.prisma.friendship.create({
         data: { userId: friendRequest.fromId, friendId: socket.user.id },
       }),
       this.prisma.friendRequest.delete({ where: { id: friendRequest.id } }),
@@ -128,7 +128,11 @@ export class FriendRequestHandler extends BaseHandler {
           "friend:new",
           id === socket.user.id ? friendRequest.from : friendRequest.to
         );
-      connectedUsers.get(id)?.emit("conversation:new", conversation);
+      connectedUsers.get(id)?.emit("conversation:new", {
+        ...conversation,
+        otherUser: conversation.participants.filter((p) => p.user.id !== id)[0]
+          .user,
+      });
     });
 
     cb({ success: true, message: "Friend request accepted" });

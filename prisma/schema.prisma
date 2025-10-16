@@ -27,37 +27,42 @@ model User {
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
+  // --- Relationships ---
   sentRequests     FriendRequest[] @relation("FriendRequestFrom")
   receivedRequests FriendRequest[] @relation("FriendRequestTo")
 
-  friends Friend[] @relation("Friends")
-  friendsOf Friend[] @relation("FriendsOf")
+  friends          Friendship[] @relation("UserFriends")
+  friendOf         Friendship[] @relation("FriendOf")
 
-  messages     Message[]
-  participants Participant[]
+  messages         Message[]
+  participants     Participant[]
+  messageDeletions MessageDeletion[]
 }
 
 model FriendRequest {
   id        Int      @id @default(autoincrement())
   fromId    Int
   toId      Int
-  message   String
+  message   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   from User @relation("FriendRequestFrom", fields: [fromId], references: [id])
   to   User @relation("FriendRequestTo", fields: [toId], references: [id])
+
+  @@unique([fromId, toId])
 }
 
-model Friend {
+model Friendship {
   id        Int      @id @default(autoincrement())
-  userId   Int
-  friendId   Int
+  userId    Int
+  friendId  Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  user User @relation("Friends", fields: [userId], references: [id])
-  friend User @relation("FriendsOf", fields: [friendId], references: [id])
+  user   User @relation("UserFriends", fields: [userId], references: [id])
+  friend User @relation("FriendOf", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }
 
 model Conversation {
@@ -70,9 +75,10 @@ model Conversation {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  lastMessage  Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
-  messages     Message[]
-  participants Participant[]
+  // Relations
+  lastMessage   Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
+  messages      Message[]
+  participants  Participant[]
 }
 
 model Participant {
@@ -81,12 +87,12 @@ model Participant {
   userId            Int
   role              ParticipantRole @default(MEMBER)
   lastSeenMessageId Int?
-  createdAt         DateTime        @default(now())
+  joinedAt          DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  conversation    Conversation @relation(fields: [conversationId], references: [id])
-  user            User         @relation(fields: [userId], references: [id])
-  lastSeenMessage Message?     @relation("LastSeenMessage", fields: [lastSeenMessageId], references: [id])
+  conversation      Conversation @relation(fields: [conversationId], references: [id])
+  user              User         @relation(fields: [userId], references: [id])
+  lastSeenMessage   Message?     @relation("LastSeenMessage", fields: [lastSeenMessageId], references: [id])
 
   @@unique([conversationId, userId])
 }
@@ -94,16 +100,38 @@ model Participant {
 model Message {
   id             Int      @id @default(autoincrement())
   content        String
-  conversationId Int
-  senderId       Int
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  deletedAt      DateTime?
+  isEdited       Boolean  @default(false)
 
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  sender       User         @relation(fields: [senderId], references: [id])
+  conversationId Int
+  senderId       Int
+  replyId        Int?
 
+  // Relations
+  reply          Message?  @relation("MessageReplies", fields: [replyId], references: [id])
+  replies        Message[] @relation("MessageReplies")
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+  deletions      MessageDeletion[]
+
+  // Reverse relations
   conversationAsLast Conversation[] @relation("LastMessage")
   participantAsLast  Participant[]  @relation("LastSeenMessage")
+}
+
+model MessageDeletion {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  messageId Int
+  createdAt DateTime @default(now())
+
+  user      User    @relation(fields: [userId], references: [id])
+  message   Message @relation(fields: [messageId], references: [id])
+
+  @@unique([userId, messageId])
 }
 
 enum Role {

@@ -117,7 +117,7 @@ export class MeController extends BaseController {
   getFriends = async (req: Request, res: Response) => {
     const payload = req.user as IJwtPayload;
 
-    const friends = await this.prisma.friend.findMany({
+    const friends = await this.prisma.friendship.findMany({
       where: { userId: payload.id },
       include: {
         friend: {
@@ -149,7 +149,6 @@ export class MeController extends BaseController {
           lastMessage: {
             include: { sender: { select: { id: true, displayName: true } } },
           },
-          _count: { select: { participants: true } },
         },
       }),
       this.prisma.conversation.findMany({
@@ -174,10 +173,7 @@ export class MeController extends BaseController {
     res.status(200).json({
       success: true,
       data: [
-        ...groups.map((g) => ({
-          ...g,
-          memberCount: g._count.participants,
-        })),
+        ...groups,
         ...directs.map(({ participants, ...d }) => ({
           ...d,
           otherUser: participants[0]?.user,

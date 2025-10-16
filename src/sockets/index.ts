@@ -4,6 +4,7 @@ import { ISocket } from "../interfaces";
 import { socketMiddleware } from "../middlewares";
 import { registerHandlers } from "../utils";
 import {
+  ConversationHandler,
   FriendHandler,
   FriendRequestHandler,
   MessageHandler,
@@ -34,6 +35,7 @@ function initSocketIO(io: Server) {
       FriendRequestHandler,
       FriendHandler,
       MessageHandler,
+      ConversationHandler,
     ]);
 
     socket.onAny((channel, payload, cb) => {

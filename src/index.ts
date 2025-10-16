@@ -3,12 +3,12 @@ import helmet from "helmet";
 import compression from "compression";
 import cors from "cors";
 import "dotenv/config";
-
-import apiRouter from "./routes";
-import { passport } from "./config";
-import initSocketIO from "./sockets";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+
+import apiRouter from "./routes";
+import { client, passport } from "./config";
+import initSocketIO from "./sockets";
 
 const app = express();
 
@@ -31,6 +31,7 @@ export const io = new Server(server, {
 initSocketIO(io);
 
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
+  await client.connect();
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
