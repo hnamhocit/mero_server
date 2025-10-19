@@ -5,6 +5,7 @@ import cors from "cors";
 import "dotenv/config";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
 
 import apiRouter from "./routes";
 import { client, passport } from "./config";
@@ -17,6 +18,7 @@ app.use(compression());
 app.use(cors());
 app.use(passport.initialize());
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(apiRouter);
 

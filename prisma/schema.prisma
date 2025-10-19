@@ -13,7 +13,6 @@ model User {
   displayName               String
   email                     String    @unique
   password                  String
-  refreshToken              String?
   bio                       String?
   photoURL                  String?
   photoId                   String?
@@ -37,6 +36,18 @@ model User {
   messages         Message[]
   participants     Participant[]
   messageDeletions MessageDeletion[]
+  sessions Session[]
+}
+
+model Session {
+  id Int @id @default(autoincrement())
+  userId Int
+  token String @unique
+  expiresAt Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model FriendRequest {

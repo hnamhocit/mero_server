@@ -15,11 +15,4 @@ const registerSchema = z.object({
   password: passwordSchema,
 });
 
-const refreshSchema = z.object({
-  refreshToken: z
-    .string()
-    .regex(/^Bearer\s.+$/, "Invalid refresh token format")
-    .transform((val) => val.replace(/^Bearer\s/, "")),
-});
-
-export { loginSchema, registerSchema, refreshSchema };
+export { loginSchema, registerSchema };
