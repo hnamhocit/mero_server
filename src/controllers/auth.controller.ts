@@ -36,7 +36,7 @@ export class AuthController extends BaseController {
       data: {
         userId: payload.id,
         token: this.hashToken(refreshToken),
-        expiresAt: Date.now() + REFRESH_TOKEN_TTL,
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
       },
     });
 
@@ -186,7 +186,7 @@ export class AuthController extends BaseController {
       where: { id: session.id },
     });
 
-    if (session.expiresAt < Date.now()) {
+    if (session.expiresAt < new Date()) {
       res.clearCookie("refreshToken");
       res.status(401).json({ success: false, msg: "Token expired" });
       return;

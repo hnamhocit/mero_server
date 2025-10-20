@@ -15,7 +15,12 @@ const app = express();
 
 app.use(helmet());
 app.use(compression());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(passport.initialize());
 app.use(express.json());
 app.use(cookieParser());
@@ -25,7 +30,7 @@ app.use(apiRouter);
 const server = createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "http://localhost:3000",
   },
   transports: ["websocket", "polling"],
 });
