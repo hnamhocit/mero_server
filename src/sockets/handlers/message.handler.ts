@@ -79,18 +79,17 @@ export class MessageHandler extends BaseHandler {
   };
 
   delete = async (socket: ISocket, args: any, cb: any) => {
-    const { id, conversationId } = args;
-    if (!id || !conversationId)
-      return cb({ success: false, message: "Message id is required" });
+    const { id } = args;
+    if (!id) return cb({ success: false, message: "Message id is required" });
 
-    const messageCount = await this.prisma.message.findUnique({
+    const message = await this.prisma.message.findUnique({
       where: {
         id: id,
       },
+      select: { conversationId: true },
     });
 
-    if (!messageCount)
-      return cb({ success: false, message: "Message not found" });
+    if (!message) return cb({ success: false, message: "Message not found" });
 
     await this.prisma.message.delete({
       where: {
@@ -98,12 +97,14 @@ export class MessageHandler extends BaseHandler {
       },
     });
 
-    socket.to(`conversation-${conversationId}`).emit("message:deleted", id);
+    socket
+      .to(`conversation-${message.conversationId}`)
+      .emit("message:deleted", id);
   };
 
   deleteForMe = async (socket: ISocket, args: any, cb: any) => {
-    const { id, conversationId } = args;
-    if (!id || !conversationId)
+    const { id } = args;
+    if (!id)
       return cb({
         success: false,
         msg: "Id, conversationId are required",

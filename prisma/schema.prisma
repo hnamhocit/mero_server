@@ -36,6 +36,7 @@ model User {
   messages         Message[]
   participants     Participant[]
   messageDeletions MessageDeletion[]
+  uploadedAttachments Attachment[]
   sessions Session[]
 }
 
@@ -89,6 +90,7 @@ model Conversation {
   // Relations
   lastMessage   Message?      @relation("LastMessage", fields: [lastMessageId], references: [id])
   messages      Message[]
+  attachments Attachment[]
   participants  Participant[]
 }
 
@@ -106,6 +108,26 @@ model Participant {
   lastSeenMessage   Message?     @relation("LastSeenMessage", fields: [lastSeenMessageId], references: [id])
 
   @@unique([conversationId, userId])
+}
+
+model Attachment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  url       String @unique
+  key       String @unique
+  originalName String
+  size Int
+  type String
+  messageId Int
+  conversationId Int 
+  userId Int
+
+  message Message @relation(fields: [messageId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
 }
 
 model Message {
@@ -127,6 +149,7 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   sender         User         @relation(fields: [senderId], references: [id])
   deletions      MessageDeletion[]
+  attachments Attachment[]
 
   // Reverse relations
   conversationAsLast Conversation[] @relation("LastMessage")
